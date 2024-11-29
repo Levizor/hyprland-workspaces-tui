@@ -1,33 +1,45 @@
-use simplelog::*;
+use clap::Parser;
+use simplelog::{CombinedLogger, Config as Conf, LevelFilter, WriteLogger};
+use std::fs::File;
 use std::io;
-use std::{fs::File, time};
-use tokio::time::{interval, Duration, Interval};
+use themes::{Theme, Themes};
 
 use ratatui::{backend::CrosstermBackend, Terminal};
 
 use crate::{
     app::{App, AppResult},
+    config::Config,
     event::{Event, EventHandler},
     handler::handle_key_events,
     tui::Tui,
 };
 
 pub mod app;
+pub mod config;
+pub mod elements;
 pub mod event;
 pub mod handler;
+pub mod themes;
 pub mod tui;
 pub mod ui;
 
 #[tokio::main]
 async fn main() -> AppResult<()> {
-    // Create an application.
-    CombinedLogger::init(vec![WriteLogger::new(
-        LevelFilter::Debug,
-        Config::default(),
-        File::create("app.log").unwrap(),
-    )])
-    .unwrap();
-    let mut app = App::new();
+    let conf = Config::parse();
+    if let Some(d) = conf.debug {
+        d.then(|| {
+            CombinedLogger::init(vec![WriteLogger::new(
+                LevelFilter::Debug,
+                Conf::default(),
+                File::create("app.log").unwrap(),
+            )])
+            .unwrap();
+        });
+    }
+
+    let theme = Themes::get_theme(conf.theme.unwrap_or(Themes::Nord));
+
+    let mut app = App::new(theme);
 
     // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(io::stdout());

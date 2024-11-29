@@ -1,7 +1,9 @@
+use crate::{elements::Workspace, themes::Theme};
 use serde_json::Value;
 use std::{
     error,
     process::{exit, Stdio},
+    vec,
 };
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::{Child, ChildStdout, Command};
@@ -14,17 +16,19 @@ pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 pub struct App {
     /// Is the application running?
     pub running: bool,
+    pub theme: Theme,
     pub state: Value,
     pub stream: tokio::io::Lines<BufReader<ChildStdout>>,
 }
 
 impl App {
     /// Constructs a new instance of [`App`].
-    pub fn new() -> Self {
+    pub fn new(theme: Theme) -> Self {
         Self {
             running: true,
             state: Value::Null,
             stream: App::init_reader(),
+            theme,
         }
     }
 
@@ -42,8 +46,16 @@ impl App {
         }
     }
 
+    pub fn update(&mut self) -> Result<(), ()> {
+        if let Some(workspaces) = self.state.as_array() {
+            let iter = workspaces.iter().map(|ws| Workspace::new);
+        }
+
+        Ok(())
+    }
+
     fn init_reader() -> tokio::io::Lines<BufReader<ChildStdout>> {
-        let mut cmd = Command::new("hyprland-workspaces")
+        let cmd = Command::new("hyprland-workspaces")
             .arg("ALL")
             .stdout(Stdio::piped())
             .spawn();
@@ -58,18 +70,7 @@ impl App {
         BufReader::new(stdout).lines()
     }
 
-    pub async fn get_update(&mut self) {
-        let line = self.stream.next_line().await;
-        match line {
-            Ok(Some(line)) => {
-                self.state = serde_json::from_str(&line).expect("Failed to parse json");
-                log::info!("{}", self.state);
-            }
-            _ => {}
-        }
-    }
     /// Set running to false to quit the application.
-
     pub fn quit(&mut self) {
         self.running = false;
     }
