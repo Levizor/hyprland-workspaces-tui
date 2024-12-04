@@ -17,7 +17,7 @@ pub fn render_workspaces(frame: &mut Frame, area: Rect, workspaces: &Vec<Workspa
     let horizontal = Layout::horizontal(
         workspaces
             .iter()
-            .map(|ws| Constraint::Length(ws.name.to_line().width() as u16 + 10)),
+            .map(|ws| Constraint::Length(ws.name.to_line().width() as u16 + 40)),
     );
 
     workspaces

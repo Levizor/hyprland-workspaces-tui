@@ -37,9 +37,7 @@ async fn main() -> AppResult<()> {
         });
     }
 
-    let theme = Themes::get_theme(conf.theme.unwrap_or(Themes::Nord));
-
-    let mut app = App::new(theme);
+    let mut app = App::new(conf);
 
     // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(io::stdout());
@@ -53,7 +51,9 @@ async fn main() -> AppResult<()> {
         tui.draw(&mut app)?;
         tokio::select! {
             Ok(Some(line)) = app.stream.next_line() => {
-                let _ = app.set_state(line);
+                if let Ok(state) = app.get_state(line){
+                    app.update(state);
+                }
             }
 
             Ok(event) = tui.events.next() => {

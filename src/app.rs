@@ -1,7 +1,11 @@
-use crate::{elements::Workspace, themes::Theme};
+use crate::{
+    config::Config,
+    elements::Workspace,
+    themes::{Theme, Themes},
+};
 use serde_json::Value;
 use std::{
-    error,
+    error::{self, Error},
     process::{exit, Stdio},
     vec,
 };
@@ -17,28 +21,27 @@ pub struct App {
     /// Is the application running?
     pub running: bool,
     pub theme: Theme,
-    pub state: Value,
     pub stream: tokio::io::Lines<BufReader<ChildStdout>>,
+    pub workspaces: Vec<Workspace>,
+    show_special: bool,
 }
 
 impl App {
     /// Constructs a new instance of [`App`].
-    pub fn new(theme: Theme) -> Self {
+    pub fn new(config: Config) -> Self {
         Self {
             running: true,
-            state: Value::Null,
             stream: App::init_reader(),
-            theme,
+            theme: Themes::get_theme(config.theme.clone()),
+            workspaces: Vec::new(),
+            show_special: config.show_special.unwrap_or_default(),
         }
     }
 
-    pub fn set_state(&mut self, state: String) -> Result<(), ()> {
+    pub fn get_state(&mut self, state: String) -> Result<Value, ()> {
         let json = serde_json::from_str(&state);
         match json {
-            Ok(result) => {
-                self.state = result;
-                Ok(())
-            }
+            Ok(result) => Ok(result),
             Err(e) => {
                 log::error!("Error: {}", e);
                 Err(())
@@ -46,12 +49,23 @@ impl App {
         }
     }
 
-    pub fn update(&mut self) -> Result<(), ()> {
-        if let Some(workspaces) = self.state.as_array() {
-            let iter = workspaces.iter().map(|ws| Workspace::new);
+    pub fn update(&mut self, state: Value) -> Result<(), ()> {
+        if let Some(workspaces) = state.as_array() {
+            self.workspaces.clear();
+            workspaces
+                .into_iter()
+                .filter(|ws| {
+                    ws["name"]
+                        .to_string()
+                        .starts_with("\"special")
+                        .then(|| self.show_special)
+                        .unwrap_or(true)
+                })
+                .map(|ws| Workspace::new(ws.clone(), self.theme.clone()))
+                .for_each(|ws| self.workspaces.push(ws));
+            return Ok(());
         }
-
-        Ok(())
+        Err(())
     }
 
     fn init_reader() -> tokio::io::Lines<BufReader<ChildStdout>> {

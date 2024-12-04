@@ -12,4 +12,7 @@ pub struct Config {
     /// Prints debug information to app.log file
     #[arg(short, long, action = clap::ArgAction::SetTrue)]
     pub debug: Option<bool>,
+
+    #[arg(short, long, action = clap::ArgAction::SetTrue)]
+    pub show_special: Option<bool>,
 }
