@@ -1,2 +1,3 @@
-# TUI implementation for hyprland-workspaces cli utility
+# hyprland-workspaces-tui
+TUI wrapper around [hyprland-workspaces](https://github.com/FieldofClay/hyprland-workspaces) cli utility.
 
