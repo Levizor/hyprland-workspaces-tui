@@ -13,6 +13,11 @@ pub struct Config {
     #[arg(short, long, action = clap::ArgAction::SetTrue)]
     pub debug: Option<bool>,
 
+    /// Show special workspaces
     #[arg(short, long, action = clap::ArgAction::SetTrue)]
     pub show_special: Option<bool>,
+
+    /// Use big text
+    #[arg(short, long, action = clap::ArgAction::SetTrue)]
+    pub big_text: Option<bool>,
 }

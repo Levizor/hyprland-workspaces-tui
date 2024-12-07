@@ -1,8 +1,8 @@
 use clap::Parser;
 use simplelog::{CombinedLogger, Config as Conf, LevelFilter, WriteLogger};
-use std::fs::File;
 use std::io;
-use themes::{Theme, Themes};
+use std::{fs::File, time::Duration};
+use tokio::time::sleep;
 
 use ratatui::{backend::CrosstermBackend, Terminal};
 
@@ -52,7 +52,7 @@ async fn main() -> AppResult<()> {
         tokio::select! {
             Ok(Some(line)) = app.stream.next_line() => {
                 if let Ok(state) = app.get_state(line){
-                    app.update(state);
+                    let _ = app.update(state);
                 }
             }
 
@@ -62,12 +62,12 @@ async fn main() -> AppResult<()> {
                     Event::Mouse(_) => {}
                     Event::Resize(_, _) => {}
                 }
-                log::info!("Events handled");
             }
         }
     }
 
     // Exit the user interface.
     tui.exit()?;
+    println!("hey");
     Ok(())
 }

@@ -5,9 +5,8 @@ use crate::{
 };
 use serde_json::Value;
 use std::{
-    error::{self, Error},
+    error::{self},
     process::{exit, Stdio},
-    vec,
 };
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::{Child, ChildStdout, Command};
@@ -23,6 +22,7 @@ pub struct App {
     pub theme: Theme,
     pub stream: tokio::io::Lines<BufReader<ChildStdout>>,
     pub workspaces: Vec<Workspace>,
+    pub big_text: bool,
     show_special: bool,
 }
 
@@ -35,6 +35,7 @@ impl App {
             theme: Themes::get_theme(config.theme.clone()),
             workspaces: Vec::new(),
             show_special: config.show_special.unwrap_or_default(),
+            big_text: config.big_text.unwrap_or_default(),
         }
     }
 
@@ -61,7 +62,7 @@ impl App {
                         .then(|| self.show_special)
                         .unwrap_or(true)
                 })
-                .map(|ws| Workspace::new(ws.clone(), self.theme.clone()))
+                .map(|ws| Workspace::new(ws.clone(), self.theme.clone(), self.big_text))
                 .for_each(|ws| self.workspaces.push(ws));
             return Ok(());
         }

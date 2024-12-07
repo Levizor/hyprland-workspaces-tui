@@ -6,6 +6,8 @@ use ratatui::{
     Frame,
 };
 
+use tui_big_text::{BigText, PixelSize};
+
 use crate::{app::App, elements::Workspace};
 
 /// Renders the user interface widgets.
@@ -17,7 +19,7 @@ pub fn render_workspaces(frame: &mut Frame, area: Rect, workspaces: &Vec<Workspa
     let horizontal = Layout::horizontal(
         workspaces
             .iter()
-            .map(|ws| Constraint::Length(ws.name.to_line().width() as u16 + 40)),
+            .map(|ws| Constraint::Length(area.width / workspaces.len() as u16)),
     );
 
     workspaces
