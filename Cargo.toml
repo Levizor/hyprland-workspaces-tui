@@ -1,6 +1,9 @@
 [package]
 name = "hyprland-workspaces-tui"
-description = ""
+description = "terminal-based user interface (TUI) wrapper for the hyprland-workspaces CLI utility."
+repository = "https://github.com/Levizor/hyprland-workspaces-tui"
+homepage = "https://github.com/Levizor/hyprland-workspaces-tui"
+
 version = "1.0.0"
 authors = ["Levizor <levizorri@gmail.com>"]
 license = "MIT"
