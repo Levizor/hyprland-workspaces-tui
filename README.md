@@ -6,7 +6,9 @@ Requires [hyprland-workspaces](https://github.com/FieldofClay/hyprland-workspace
 
 ## Installation 
 
-```cargo install hyprland-workspaces-tui```
+```
+cargo install hyprland-workspaces-tui
+```
 
 ## Showcase
 ![](images/1.png)
