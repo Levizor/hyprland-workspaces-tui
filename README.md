@@ -4,6 +4,10 @@ hyprland-workspaces-tui is a terminal-based user interface (TUI) wrapper for the
 Designed as a lightweight alternative to common bar functionalities.
 Requires [hyprland-workspaces](https://github.com/FieldofClay/hyprland-workspaces) to be installed.
 
+## Installation 
+
+```cargo install hyprland-workspaces-tui```
+
 ## Showcase
 ![](images/1.png)
 ![](images/2.png)
