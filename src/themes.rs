@@ -35,8 +35,8 @@ pub enum Themes {
 }
 
 impl Themes {
-    pub fn get_theme(theme: Option<Themes>) -> Theme {
-        match theme.unwrap_or_default() {
+    pub fn get_theme(theme: &Option<Themes>) -> Theme {
+        match theme.clone().unwrap_or_default() {
             Themes::Nord => Theme {
                 text: col!(0xD6DCE7),
                 button: col!(0x81A1C1),

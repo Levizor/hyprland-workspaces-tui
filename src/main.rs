@@ -1,9 +1,8 @@
 use clap::Parser;
 use handler::handle_mouse_event;
 use simplelog::{CombinedLogger, Config as Conf, LevelFilter, WriteLogger};
+use std::fs::File;
 use std::io;
-use std::time::Duration;
-use std::{fs::File, thread::sleep};
 
 use ratatui::{backend::CrosstermBackend, Terminal};
 
@@ -27,15 +26,13 @@ pub mod ui;
 #[tokio::main]
 async fn main() -> AppResult<()> {
     let conf = Config::parse();
-    if let Some(d) = conf.debug {
-        d.then(|| {
-            CombinedLogger::init(vec![WriteLogger::new(
-                LevelFilter::Debug,
-                Conf::default(),
-                File::create("app.log").unwrap(),
-            )])
-            .unwrap();
-        });
+    if conf.debug {
+        CombinedLogger::init(vec![WriteLogger::new(
+            LevelFilter::Debug,
+            Conf::default(),
+            File::create("app.log").unwrap(),
+        )])
+        .unwrap();
     }
 
     let mut app = App::new(conf);
@@ -52,9 +49,7 @@ async fn main() -> AppResult<()> {
         tui.draw(&mut app)?;
         tokio::select! {
             Ok(Some(line)) = app.stream.next_line() => {
-                if let Ok(state) = app.get_state(line){
-                    let _ = app.update(state);
-                }
+                app.feed(line);
             }
 
             Ok(event) = tui.events.next() => {

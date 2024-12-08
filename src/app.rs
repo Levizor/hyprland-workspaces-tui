@@ -14,6 +14,16 @@ use tokio::{
     process::Child,
 };
 
+pub fn get_state(state: String) -> Result<Value, ()> {
+    let json = serde_json::from_str(&state);
+    match json {
+        Ok(result) => Ok(result),
+        Err(e) => {
+            log::error!("Error: {}", e);
+            Err(())
+        }
+    }
+}
 /// Application result type.
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
@@ -22,41 +32,29 @@ pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 pub struct App {
     /// Is the application running?
     pub running: bool,
-    pub theme: Theme,
     pub stream: tokio::io::Lines<BufReader<ChildStdout>>,
     pub workspaces: Vec<Workspace>,
-    pub big_text: bool,
     pub child: Child,
-    show_special: bool,
+    pub config: Config,
+    pub theme: Theme,
 }
 
 impl App {
     /// Constructs a new instance of [`App`].
     pub fn new(config: Config) -> Self {
-        let (stream, child) = App::init_reader();
+        let (stream, child) = App::init_reader(&config.monitor);
+        let theme = Themes::get_theme(&config.theme);
         Self {
             running: true,
             stream,
-            theme: Themes::get_theme(config.theme.clone()),
             workspaces: Vec::new(),
-            show_special: config.show_special.unwrap_or_default(),
-            big_text: config.big_text.unwrap_or_default(),
             child,
+            theme,
+            config,
         }
     }
 
-    pub fn get_state(&mut self, state: String) -> Result<Value, ()> {
-        let json = serde_json::from_str(&state);
-        match json {
-            Ok(result) => Ok(result),
-            Err(e) => {
-                log::error!("Error: {}", e);
-                Err(())
-            }
-        }
-    }
-
-    pub fn update(&mut self, state: Value) -> Result<(), ()> {
+    fn update(&mut self, state: Value) -> Result<(), ()> {
         if let Some(workspaces) = state.as_array() {
             self.workspaces.clear();
             workspaces
@@ -65,22 +63,30 @@ impl App {
                     ws["name"]
                         .to_string()
                         .starts_with("\"special")
-                        .then(|| self.show_special)
+                        .then(|| self.config.show_special)
                         .unwrap_or(true)
                 })
-                .map(|ws| Workspace::new(ws.clone(), self.theme.clone(), self.big_text))
+                .map(|ws| Workspace::new(ws.clone(), self.theme.clone(), self.config.big_text))
                 .for_each(|ws| self.workspaces.push(ws));
             return Ok(());
         }
         Err(())
     }
 
-    fn init_reader() -> (
+    pub fn feed(&mut self, line: String) {
+        if let Ok(state) = get_state(line) {
+            let _ = self.update(state);
+        }
+    }
+
+    fn init_reader(
+        monitor: &String,
+    ) -> (
         tokio::io::Lines<BufReader<ChildStdout>>,
         tokio::process::Child,
     ) {
         let child = Command::new("hyprland-workspaces")
-            .arg("ALL")
+            .arg(monitor)
             .stdout(Stdio::piped())
             .spawn();
         let Ok(mut child) = child else {
@@ -92,8 +98,9 @@ impl App {
             .stdout
             .take()
             .expect("Couldn't take stdout of the hyprland-workspaces");
-        let stream = BufReader::new(stdout).lines();
-        (stream, child)
+
+        let reader = BufReader::new(stdout);
+        (reader.lines(), child)
     }
 
     pub async fn close_reader(&mut self) {
