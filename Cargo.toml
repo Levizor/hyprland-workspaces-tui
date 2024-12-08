@@ -1,6 +1,6 @@
 [package]
 name = "hyprland-workspaces-tui"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Levizor <levizorri@gmail.com>"]
 license = "MIT"
 edition = "2021"
