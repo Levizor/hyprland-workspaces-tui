@@ -5,6 +5,7 @@ repository = "https://github.com/Levizor/hyprland-workspaces-tui"
 homepage = "https://github.com/Levizor/hyprland-workspaces-tui"
 
 version = "1.0.0"
+build = "build.rs"
 authors = ["Levizor <levizorri@gmail.com>"]
 license = "MIT"
 edition = "2021"
