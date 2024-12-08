@@ -2,7 +2,7 @@ use std::process::Stdio;
 
 use ratatui::{
     buffer::Buffer,
-    layout::{Position, Rect},
+    layout::{Constraint, Flex, Layout, Position, Rect},
     style::{Style, Stylize},
     text::ToLine,
     widgets::{Widget, WidgetRef},
@@ -55,6 +55,14 @@ impl Workspace {
     }
 }
 
+fn center(area: Rect, horizontal: Constraint, vertical: Constraint) -> Rect {
+    let [area] = Layout::horizontal([horizontal])
+        .flex(Flex::Center)
+        .areas(area);
+    let [area] = Layout::vertical([vertical]).flex(Flex::Center).areas(area);
+    area
+}
+
 impl WidgetRef for Workspace {
     #[allow(clippy::cast_possible_truncation)]
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
@@ -91,7 +99,7 @@ impl WidgetRef for Workspace {
                     .centered()
                     .lines(vec![line])
                     .build();
-                let ar = Rect::new(area.x, area.height / 2 - 3, area.width, area.height);
+                let ar = center(area, Constraint::Length(area.width), Constraint::Length(7));
                 text.render(ar, buf);
             }
             false => {
