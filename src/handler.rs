@@ -1,12 +1,6 @@
-use crate::{
-    app::{App, AppResult},
-    elements::Workspace,
-};
-use crossterm::{
-    cursor::MoveDown,
-    event::{KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent},
-};
-use ratatui::layout::{Position, Positions};
+use crate::app::{App, AppResult};
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent};
+use ratatui::layout::Position;
 
 /// Handles the key events and updates the state of [`App`].
 pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
