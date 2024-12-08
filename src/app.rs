@@ -3,6 +3,7 @@ use crate::{
     elements::Workspace,
     themes::{Theme, Themes},
 };
+use ratatui::layout::Position;
 use serde_json::Value;
 use std::{
     error::{self},
@@ -101,6 +102,14 @@ impl App {
 
         let reader = BufReader::new(stdout);
         (reader.lines(), child)
+    }
+
+    pub fn find_ws_by_mouse_pos(&self, pos: Position) -> Option<&Workspace> {
+        self.workspaces.iter().find(|ws| ws.contains(pos))
+    }
+
+    pub fn find_ws_mut_by_mouse_pos(&mut self, pos: Position) -> Option<&mut Workspace> {
+        self.workspaces.iter_mut().find(|ws| ws.contains(pos))
     }
 
     pub async fn close_reader(&mut self) {

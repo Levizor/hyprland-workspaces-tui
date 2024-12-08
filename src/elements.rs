@@ -3,12 +3,12 @@ use std::process::Stdio;
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Flex, Layout, Position, Rect},
-    style::{Style, Stylize},
+    style::{Color, Style},
     text::ToLine,
     widgets::{Widget, WidgetRef},
 };
 use serde_json::Value;
-use tokio::{net::unix::pipe::pipe, process::Command, spawn};
+use tokio::process::Command;
 use tui_big_text::{BigText, PixelSize};
 
 use crate::themes::Theme;
@@ -53,6 +53,26 @@ impl Workspace {
             .stdout(Stdio::null())
             .spawn()
     }
+
+    pub fn set_focus(&mut self, focused: bool) {
+        self.focused = focused;
+    }
+
+    fn get_colors(&self) -> (Color, Color) {
+        let mut background = self.theme.button_bg;
+        let mut foreground = self.theme.button_fg;
+
+        if self.focused {
+            background = self.theme.focused_bg;
+            foreground = self.theme.focused_fg;
+        }
+        if self.active {
+            background = self.theme.active_bg;
+            foreground = self.theme.active_fg;
+        }
+
+        (background, foreground)
+    }
 }
 
 fn center(area: Rect, horizontal: Constraint, vertical: Constraint) -> Rect {
@@ -66,19 +86,17 @@ fn center(area: Rect, horizontal: Constraint, vertical: Constraint) -> Rect {
 impl WidgetRef for Workspace {
     #[allow(clippy::cast_possible_truncation)]
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
-        let button_col = self
-            .active
-            .then_some(self.theme.active)
-            .unwrap_or(self.theme.button);
         let line = self.name.to_line();
 
-        buf.set_style(area, Style::new().bg(button_col).fg(self.theme.text));
+        let (background, foreground) = self.get_colors();
+
+        buf.set_style(area, Style::new().bg(background).fg(foreground));
         if area.height > 2 {
             buf.set_string(
                 area.x,
                 area.y,
                 " ".repeat(area.width as usize),
-                Style::new().fg(self.theme.text).bg(button_col),
+                Style::new().fg(foreground).bg(background),
             );
         }
 
@@ -88,14 +106,14 @@ impl WidgetRef for Workspace {
                 area.x,
                 area.y + area.height - 1,
                 " ".repeat(area.width as usize),
-                Style::new().bg(button_col),
+                Style::new().bg(background),
             );
         }
         match self.big_text {
             true => {
                 let text = BigText::builder()
                     .pixel_size(PixelSize::Full)
-                    .style(Style::new().fg(self.theme.text))
+                    .style(Style::new().fg(foreground))
                     .centered()
                     .lines(vec![line])
                     .build();

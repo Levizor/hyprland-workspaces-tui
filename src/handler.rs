@@ -1,9 +1,12 @@
-use crate::app::{App, AppResult};
+use crate::{
+    app::{App, AppResult},
+    elements::Workspace,
+};
 use crossterm::{
     cursor::MoveDown,
     event::{KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent},
 };
-use ratatui::layout::Position;
+use ratatui::layout::{Position, Positions};
 
 /// Handles the key events and updates the state of [`App`].
 pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
@@ -24,28 +27,31 @@ pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
     Ok(())
 }
 
+fn get_pos(mouse_event: MouseEvent) -> Position {
+    Position::new(mouse_event.column, mouse_event.row)
+}
+
+fn handle_click(mouse_event: MouseEvent, app: &mut App) {
+    if let Some(ws) = app.find_ws_mut_by_mouse_pos(get_pos(mouse_event)) {
+        if let Err(e) = ws.activate() {
+            log::error!("{}", e);
+        }
+    }
+}
+
+fn handle_move(mouse_event: MouseEvent, app: &mut App) {
+    app.workspaces.iter_mut().for_each(|ws| ws.set_focus(false));
+    if let Some(ws) = app.find_ws_mut_by_mouse_pos(get_pos(mouse_event)) {
+        ws.set_focus(true);
+    }
+}
+
 pub fn handle_mouse_event(mouse_event: MouseEvent, app: &mut App) -> AppResult<()> {
     match mouse_event.kind {
-        crossterm::event::MouseEventKind::Down(MouseButton::Left) => {
-            let ws = app
-                .workspaces
-                .iter()
-                .find(|ws| ws.contains(Position::new(mouse_event.column, mouse_event.row)));
-            match ws {
-                Some(ws) => {
-                    log::info!("Found ws with name {}", ws.name);
-                    if let Err(e) = ws.activate() {
-                        log::error!("{}", e);
-                    }
-                }
-                None => {
-                    log::info!("Couldn't found the ws");
-                }
-            }
-        }
-
+        crossterm::event::MouseEventKind::Down(MouseButton::Left) => handle_click(mouse_event, app),
         crossterm::event::MouseEventKind::Down(MouseButton::Right) => {}
         crossterm::event::MouseEventKind::Down(MouseButton::Middle) => {}
+        crossterm::event::MouseEventKind::Moved => handle_move(mouse_event, app),
         _ => {}
     }
     Ok(())
