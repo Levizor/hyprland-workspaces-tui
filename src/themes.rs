@@ -1,7 +1,5 @@
-use std::default;
-
 use clap::ValueEnum;
-use ratatui::style::{Color, Style};
+use ratatui::style::Color;
 
 macro_rules! col {
     ($hex:expr) => {

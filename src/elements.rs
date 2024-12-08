@@ -1,11 +1,14 @@
+use std::process::Stdio;
+
 use ratatui::{
     buffer::Buffer,
-    layout::Rect,
+    layout::{Position, Rect},
     style::{Style, Stylize},
     text::ToLine,
     widgets::{Widget, WidgetRef},
 };
 use serde_json::Value;
+use tokio::{net::unix::pipe::pipe, process::Command, spawn};
 use tui_big_text::{BigText, PixelSize};
 
 use crate::themes::Theme;
@@ -13,10 +16,11 @@ use crate::themes::Theme;
 #[derive(Debug)]
 pub struct Workspace {
     pub name: String,
-    id: i32,
     active: bool,
     theme: Theme,
     big_text: bool,
+    pub rect: Rect,
+    focused: bool,
 }
 
 impl Workspace {
@@ -27,10 +31,27 @@ impl Workspace {
         Workspace {
             name,
             active: value["active"].to_string().parse().unwrap_or(false),
-            id: value["id"].to_string().parse().unwrap_or(-9999),
+            //id: value["id"].to_string().parse().unwrap_or(-9999),
             theme,
             big_text,
+            rect: Rect::new(0, 0, 0, 0),
+            focused: false,
         }
+    }
+
+    pub fn set_rect(&mut self, rect: Rect) {
+        self.rect = rect;
+    }
+
+    pub fn contains(&self, position: Position) -> bool {
+        self.rect.contains(position)
+    }
+
+    pub fn activate(&self) -> Result<tokio::process::Child, std::io::Error> {
+        Command::new("hyprctl")
+            .args(["dispatch", "workspace", &self.name])
+            .stdout(Stdio::null())
+            .spawn()
     }
 }
 

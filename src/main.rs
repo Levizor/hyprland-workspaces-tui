@@ -1,8 +1,9 @@
 use clap::Parser;
+use handler::handle_mouse_event;
 use simplelog::{CombinedLogger, Config as Conf, LevelFilter, WriteLogger};
 use std::io;
-use std::{fs::File, time::Duration};
-use tokio::time::sleep;
+use std::time::Duration;
+use std::{fs::File, thread::sleep};
 
 use ratatui::{backend::CrosstermBackend, Terminal};
 
@@ -59,15 +60,15 @@ async fn main() -> AppResult<()> {
             Ok(event) = tui.events.next() => {
                 match event {
                     Event::Key(key_event) => handle_key_events(key_event, &mut app)?,
-                    Event::Mouse(_) => {}
+                    Event::Mouse(mouse_event) => handle_mouse_event(mouse_event, &mut app)?,
                     Event::Resize(_, _) => {}
                 }
             }
         }
     }
 
+    app.close_reader().await;
     // Exit the user interface.
     tui.exit()?;
-    println!("hey");
     Ok(())
 }

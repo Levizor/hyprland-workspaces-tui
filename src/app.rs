@@ -8,8 +8,11 @@ use std::{
     error::{self},
     process::{exit, Stdio},
 };
-use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::process::{Child, ChildStdout, Command};
+use tokio::process::{ChildStdout, Command};
+use tokio::{
+    io::{AsyncBufReadExt, BufReader},
+    process::Child,
+};
 
 /// Application result type.
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -23,19 +26,22 @@ pub struct App {
     pub stream: tokio::io::Lines<BufReader<ChildStdout>>,
     pub workspaces: Vec<Workspace>,
     pub big_text: bool,
+    pub child: Child,
     show_special: bool,
 }
 
 impl App {
     /// Constructs a new instance of [`App`].
     pub fn new(config: Config) -> Self {
+        let (stream, child) = App::init_reader();
         Self {
             running: true,
-            stream: App::init_reader(),
+            stream,
             theme: Themes::get_theme(config.theme.clone()),
             workspaces: Vec::new(),
             show_special: config.show_special.unwrap_or_default(),
             big_text: config.big_text.unwrap_or_default(),
+            child,
         }
     }
 
@@ -69,20 +75,29 @@ impl App {
         Err(())
     }
 
-    fn init_reader() -> tokio::io::Lines<BufReader<ChildStdout>> {
-        let cmd = Command::new("hyprland-workspaces")
+    fn init_reader() -> (
+        tokio::io::Lines<BufReader<ChildStdout>>,
+        tokio::process::Child,
+    ) {
+        let child = Command::new("hyprland-workspaces")
             .arg("ALL")
             .stdout(Stdio::piped())
             .spawn();
-        let Ok(mut cmd) = cmd else {
+        let Ok(mut child) = child else {
             eprintln!("Couldn't run hyprland-workspaces");
             exit(1);
         };
-        let stdout = cmd
+
+        let stdout = child
             .stdout
             .take()
             .expect("Couldn't take stdout of the hyprland-workspaces");
-        BufReader::new(stdout).lines()
+        let stream = BufReader::new(stdout).lines();
+        (stream, child)
+    }
+
+    pub async fn close_reader(&mut self) {
+        let _ = self.child.kill().await;
     }
 
     /// Set running to false to quit the application.

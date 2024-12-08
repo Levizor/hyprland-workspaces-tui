@@ -1,5 +1,3 @@
-use std::fmt::Result;
-
 use crate::themes::Themes;
 use clap::Parser;
 
