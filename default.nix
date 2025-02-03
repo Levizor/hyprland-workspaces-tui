@@ -3,7 +3,7 @@ pkgs.rustPlatform.buildRustPackage {
   pname = "hyprland-workspaces-tui";
   version = "1.0.2";
   src = pkgs.lib.cleanSource ./.;
-  cargoHash = "sha256-0bADed6AUMx5UkJ3oqxthaKt94ocEn7xXsgaH0wOiNM=";
+  cargoHash = "sha256-RatW+9CPOmaG9u3/XCNnqyThBafZa0qRm02OvATq45I=";
 
   buildInputs = [
     pkgs.makeWrapper
