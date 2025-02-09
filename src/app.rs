@@ -44,7 +44,7 @@ impl App {
     /// Constructs a new instance of [`App`].
     pub fn new(config: Config) -> Self {
         let (stream, child) = App::init_reader(&config.monitor);
-        let theme = Themes::get_theme(&config.theme);
+        let theme = Themes::get_theme(&config.theme, config.transparent);
         Self {
             running: true,
             stream,

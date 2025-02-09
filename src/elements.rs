@@ -31,7 +31,7 @@ impl Workspace {
         Workspace {
             name,
             active: value["active"].to_string().parse().unwrap_or(false),
-            //id: value["id"].to_string().parse().unwrap_or(-9999),
+            //I don't think we need this, but let it be here for a while: id: value["id"].to_string().parse().unwrap_or(-9999),
             theme,
             big_text,
             rect: Rect::new(0, 0, 0, 0),
@@ -71,6 +71,10 @@ impl Workspace {
             foreground = self.theme.active_fg;
         }
 
+        if self.theme.transparent_bg {
+            background = Color::Reset;
+        }
+
         (background, foreground)
     }
 }
@@ -100,15 +104,6 @@ impl WidgetRef for Workspace {
             );
         }
 
-        // render bottom line if there's enough space
-        if area.height > 1 {
-            buf.set_string(
-                area.x,
-                area.y + area.height - 1,
-                " ".repeat(area.width as usize),
-                Style::new().bg(background),
-            );
-        }
         match self.big_text {
             true => {
                 let text = BigText::builder()

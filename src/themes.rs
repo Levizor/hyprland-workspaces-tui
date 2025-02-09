@@ -16,6 +16,7 @@ pub struct Theme {
     pub button_border: Color, // border around workspace button block
     pub active_fg: Color,     // foreground for active workspace button text
     pub focused_fg: Color,    // foreground for focused workspace button text
+    pub transparent_bg: bool,
 }
 
 #[derive(ValueEnum, Debug, Clone, Default)]
@@ -36,8 +37,8 @@ pub enum Themes {
 }
 
 impl Themes {
-    pub fn get_theme(theme: &Option<Themes>) -> Theme {
-        match theme.clone().unwrap_or_default() {
+    pub fn get_theme(theme: &Option<Themes>, transparent_bg: bool) -> Theme {
+        let theme = match theme.clone().unwrap_or_default() {
             Themes::Nord => Theme {
                 button_fg: col!(0xD8DEE9),
                 button_bg: col!(0x5E81AC),
@@ -46,6 +47,7 @@ impl Themes {
                 button_border: col!(0x4C566A),
                 active_fg: col!(0xECEFF4),
                 focused_fg: col!(0xD8DEE9),
+                transparent_bg,
             },
             Themes::Gruvbox => Theme {
                 button_fg: col!(0xD5C4A1),
@@ -55,6 +57,7 @@ impl Themes {
                 button_border: col!(0x7C6F3A),
                 active_fg: col!(0xFBF1C7),
                 focused_fg: col!(0xD5C4A1),
+                transparent_bg,
             },
             Themes::Dracula => Theme {
                 button_fg: col!(0xF8F8F2),
@@ -64,6 +67,7 @@ impl Themes {
                 button_border: col!(0x44475A),
                 active_fg: col!(0x282A36),
                 focused_fg: col!(0xF8F8F2),
+                transparent_bg,
             },
             Themes::SolarizedDark => Theme {
                 button_fg: col!(0x93A1A1),
@@ -73,6 +77,7 @@ impl Themes {
                 button_border: col!(0x073642),
                 active_fg: col!(0xFDF6E3),
                 focused_fg: col!(0xFDF6E3),
+                transparent_bg,
             },
             Themes::SolarizedLight => Theme {
                 button_fg: col!(0x657B83),
@@ -82,6 +87,7 @@ impl Themes {
                 button_border: col!(0xEEE8D5),
                 active_fg: col!(0x002B36),
                 focused_fg: col!(0x002B36),
+                transparent_bg,
             },
             Themes::Monokai => Theme {
                 button_fg: col!(0xF8F8F2),
@@ -91,6 +97,7 @@ impl Themes {
                 button_border: col!(0x66D9EF),
                 active_fg: col!(0x272822),
                 focused_fg: col!(0x272822),
+                transparent_bg,
             },
             Themes::OneDark => Theme {
                 button_fg: col!(0xABB2BF),
@@ -100,6 +107,7 @@ impl Themes {
                 button_border: col!(0x56B6C2),
                 active_fg: col!(0x282C34),
                 focused_fg: col!(0x282C34),
+                transparent_bg,
             },
             Themes::Catppuccin => Theme {
                 button_fg: col!(0xD9E0EE),
@@ -109,6 +117,7 @@ impl Themes {
                 button_border: col!(0xA6E3A1),
                 active_fg: col!(0x1E1E2E),
                 focused_fg: col!(0x1E1E2E),
+                transparent_bg,
             },
             Themes::TokyoNight => Theme {
                 button_fg: col!(0xC0CAF5),
@@ -118,6 +127,7 @@ impl Themes {
                 button_border: col!(0x414868),
                 active_fg: col!(0x1A1B26),
                 focused_fg: col!(0x1A1B26),
+                transparent_bg,
             },
             Themes::AyuDark => Theme {
                 button_fg: col!(0xBFBDB6),
@@ -127,6 +137,7 @@ impl Themes {
                 button_border: col!(0x273B42),
                 active_fg: col!(0xF8F8F2),
                 focused_fg: col!(0xF8F8F2),
+                transparent_bg,
             },
             Themes::TomorrowNight => Theme {
                 button_fg: col!(0xC5C8C6),
@@ -136,6 +147,7 @@ impl Themes {
                 button_border: col!(0x373B41),
                 active_fg: col!(0x1D1F21),
                 focused_fg: col!(0x1D1F21),
+                transparent_bg,
             },
             Themes::Horizon => Theme {
                 button_fg: col!(0xE4A8A1),
@@ -145,7 +157,9 @@ impl Themes {
                 button_border: col!(0x9CAACF),
                 active_fg: col!(0x1C1E26),
                 focused_fg: col!(0x1C1E26),
+                transparent_bg,
             },
-        }
+        };
+        return theme;
     }
 }

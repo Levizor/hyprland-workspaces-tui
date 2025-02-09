@@ -25,6 +25,10 @@ pub struct Config {
     #[arg(short, long, action = clap::ArgAction::SetTrue, default_value_t = false)]
     pub big_text: bool,
 
+    /// Makes background transparent
+    #[arg(long, action = clap::ArgAction::SetTrue, default_value_t = false)]
+    pub transparent: bool,
+
     /// Generates completion scripts for the specified shell
     #[arg(long, value_name = "SHELL", value_enum)]
     pub completions: Option<Shell>,
