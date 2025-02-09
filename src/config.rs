@@ -32,4 +32,8 @@ pub struct Config {
     /// Generates completion scripts for the specified shell
     #[arg(long, value_name = "SHELL", value_enum)]
     pub completions: Option<Shell>,
+
+    /// Places workspaces vertically
+    #[arg(short, long, action = clap::ArgAction::SetTrue, default_value_t = false)]
+    pub vertical: bool,
 }

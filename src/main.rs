@@ -1,5 +1,5 @@
 use clap::{CommandFactory, Parser};
-use clap_complete::{generate, Shell};
+use clap_complete::generate;
 use handler::handle_mouse_event;
 use simplelog::{CombinedLogger, Config as Conf, LevelFilter, WriteLogger};
 use std::fs::File;
