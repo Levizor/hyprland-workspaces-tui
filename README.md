@@ -18,6 +18,12 @@ The other option requires [hyprland-workspaces](https://github.com/FieldofClay/h
 ```
 cargo install hyprland-workspaces-tui
 ```
+or you can install both using cargo
+```
+cargo install hyprland-workspaces hyprland-workspaces-tui
+```
+Don't forget to add ~/.cargo/bin to your PATH.
+
 
 
 ## Showcase
