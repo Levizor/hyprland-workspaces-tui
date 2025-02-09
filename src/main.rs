@@ -1,4 +1,5 @@
-use clap::Parser;
+use clap::{CommandFactory, Parser};
+use clap_complete::{generate, Shell};
 use handler::handle_mouse_event;
 use simplelog::{CombinedLogger, Config as Conf, LevelFilter, WriteLogger};
 use std::fs::File;
@@ -26,6 +27,14 @@ pub mod ui;
 #[tokio::main]
 async fn main() -> AppResult<()> {
     let conf = Config::parse();
+
+    if let Some(shell) = conf.completions {
+        let mut cmd = Config::command();
+        let mut out = io::stdout();
+        generate(shell, &mut cmd, "hyprland-workspaces-tui", &mut out);
+        return Ok(());
+    }
+
     if conf.debug {
         CombinedLogger::init(vec![WriteLogger::new(
             LevelFilter::Debug,
