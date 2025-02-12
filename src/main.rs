@@ -1,5 +1,6 @@
 use clap::{CommandFactory, Parser};
 use clap_complete::generate;
+use config::Commands;
 use handler::handle_mouse_event;
 use simplelog::{CombinedLogger, Config as Conf, LevelFilter, WriteLogger};
 use std::fs::File;
@@ -20,6 +21,7 @@ pub mod config;
 pub mod elements;
 pub mod event;
 pub mod handler;
+pub mod plain_text_mode;
 pub mod themes;
 pub mod tui;
 pub mod ui;
@@ -45,6 +47,11 @@ async fn main() -> AppResult<()> {
     }
 
     let mut app = App::new(conf);
+
+    if let Some(Commands::Plain { .. }) = &app.config.command {
+        log::info!("Entering plain text mode");
+        return plain_text_mode::main(&mut app).await;
+    }
 
     // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(io::stdout());

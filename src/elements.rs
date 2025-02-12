@@ -58,6 +58,10 @@ impl Workspace {
         self.focused = focused;
     }
 
+    pub fn is_active(&self) -> bool {
+        self.active
+    }
+
     fn get_colors(&self) -> (Color, Color) {
         let mut background = self.theme.button_bg;
         let mut foreground = self.theme.button_fg;

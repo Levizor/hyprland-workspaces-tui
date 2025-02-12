@@ -1,5 +1,5 @@
 use crate::themes::Themes;
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use clap_complete::Shell;
 
 #[derive(Parser, Debug)]
@@ -36,4 +36,25 @@ pub struct Config {
     /// Places workspaces vertically
     #[arg(short, long, action = clap::ArgAction::SetTrue, default_value_t = false)]
     pub vertical: bool,
+
+    #[command(subcommand)]
+    pub command: Option<Commands>,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum Commands {
+    /// Just print workspaces to stdout
+    Plain {
+        /// Separator between workspaces
+        #[arg(short, long, default_value_t = String::from(" "))]
+        separator: String,
+
+        /// String to add around active workspacse
+        #[arg(short, long, default_value_t = String::from("|"))]
+        active: String,
+
+        /// Use carriage return to override update line
+        #[arg(short, long, action = clap::ArgAction::SetTrue, default_value_t = false)]
+        carriage_return: bool,
+    },
 }
