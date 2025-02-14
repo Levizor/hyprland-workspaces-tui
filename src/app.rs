@@ -117,7 +117,8 @@ impl App {
     }
 
     /// Set running to false to quit the application.
-    pub fn quit(&mut self) {
+    pub async fn quit(&mut self) {
+        self.close_reader().await;
         self.running = false;
     }
 }

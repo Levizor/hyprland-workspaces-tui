@@ -95,6 +95,7 @@ impl WidgetRef for Workspace {
     #[allow(clippy::cast_possible_truncation)]
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
         let line = self.name.to_line();
+        log::debug!("Rendering widget {}", line);
 
         let (background, foreground) = self.get_colors();
 

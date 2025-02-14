@@ -70,7 +70,7 @@ async fn main() -> AppResult<()> {
 
             Ok(event) = tui.events.next() => {
                 match event {
-                    Event::Key(key_event) => handle_key_events(key_event, &mut app)?,
+                    Event::Key(key_event) => handle_key_events(key_event, &mut app).await?,
                     Event::Mouse(mouse_event) => {
                         handle_mouse_event(mouse_event, &mut app)?
                     },
@@ -80,7 +80,6 @@ async fn main() -> AppResult<()> {
         }
     }
 
-    app.close_reader().await;
     // Exit the user interface.
     tui.exit()?;
     Ok(())

@@ -56,5 +56,8 @@ pub enum Commands {
         /// Use carriage return to override update line
         #[arg(short, long, action = clap::ArgAction::SetTrue, default_value_t = false)]
         carriage_return: bool,
+
+        #[arg(short, long, action = clap::ArgAction::SetTrue, default_value_t = false)]
+        print_once: bool
     },
 }

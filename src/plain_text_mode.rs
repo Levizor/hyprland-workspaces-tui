@@ -18,9 +18,10 @@ fn print(app: &App, config: &PlainConfig) {
         }
     }
     print!(
-        "{}{}",
-        if config.carriage_return { "\r" } else { "\n" },
-        message
+        "{}{}{}",
+        if config.carriage_return { "\r" } else { "" },
+        message,
+        if config.carriage_return { "" } else { "\n" },
     );
     io::stdout().flush().unwrap();
     log::info!("MSG: {}", message);
@@ -31,23 +32,25 @@ pub async fn main(app: &mut App) -> AppResult<()> {
         separator,
         active,
         carriage_return,
+        print_once,
     }) = &app.config.command
     {
         PlainConfig {
-            separator: separator.clone(),
-            active: active.clone(),
-            carriage_return: carriage_return.clone(),
+            separator: separator.into(),
+            active: active.into(),
+            carriage_return: *carriage_return,
+            print_once: *print_once,
         }
     } else {
         PlainConfig {
             separator: String::from(" "),
             active: String::from("|"),
-            carriage_return: true,
+            carriage_return: false,
+            print_once: false,
         }
     };
 
     while app.running {
-        print(&app, &config);
         tokio::select! {
             Ok(Some(line)) = app.stream.next_line() => {
                 app.feed(line);
@@ -55,8 +58,13 @@ pub async fn main(app: &mut App) -> AppResult<()> {
 
             _ = signal::ctrl_c() => {
                 println!();
-                app.quit();
+                app.quit().await;
             }
+        }
+        print(&app, &config);
+        if config.print_once {
+            println!();
+            app.quit().await;
         }
     }
 
@@ -67,4 +75,5 @@ struct PlainConfig {
     separator: String,
     active: String,
     carriage_return: bool,
+    print_once: bool,
 }
