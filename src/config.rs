@@ -1,63 +1,175 @@
-use crate::themes::Themes;
-use clap::{Parser, Subcommand};
-use clap_complete::Shell;
+use ::config;
+use dirs::config_dir;
+use ratatui::style::Color;
+use serde::Deserialize;
+use std::error::Error;
+use std::fs;
+use std::path::PathBuf;
+use std::str::FromStr;
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about=None)]
-pub struct Config {
-    /// Monitor name passed to hyprland-workspaces. ALL by default.
-    #[arg(short, long, value_name = "MONITOR", default_value = "ALL")]
-    pub monitor: String,
-
-    /// Sets a theme
-    #[arg(short, long, value_name = "THEME_NAME")]
-    pub theme: Option<Themes>,
-
-    /// Prints debug information to app.log file
-    #[arg(short, long, action = clap::ArgAction::SetTrue, default_value_t = false)]
-    pub debug: bool,
-
-    /// Show special workspaces
-    #[arg(short, long, action = clap::ArgAction::SetTrue, default_value_t = false)]
-    pub show_special: bool,
-
-    /// Use big text
-    #[arg(short, long, action = clap::ArgAction::SetTrue, default_value_t = false)]
-    pub big_text: bool,
-
-    /// Makes background transparent
-    #[arg(long, action = clap::ArgAction::SetTrue, default_value_t = false)]
-    pub transparent: bool,
-
-    /// Generates completion scripts for the specified shell
-    #[arg(long, value_name = "SHELL", value_enum)]
-    pub completions: Option<Shell>,
-
-    /// Places workspaces vertically
-    #[arg(short, long, action = clap::ArgAction::SetTrue, default_value_t = false)]
-    pub vertical: bool,
-
-    #[command(subcommand)]
-    pub command: Option<Commands>,
+fn get_default_config_path() -> Result<PathBuf, Box<dyn Error>> {
+    match dirs::config_dir() {
+        Some(conf_dir) => Ok(conf_dir.join("hyprland-workspaces-tui/config.toml")),
+        None => Err(Box::<dyn Error>::from(
+            "Couldn't determine default config directory.",
+        )),
+    }
 }
 
-#[derive(Subcommand, Debug)]
-pub enum Commands {
-    /// Just print workspaces to stdout
-    Plain {
-        /// Separator between workspaces
-        #[arg(short, long, default_value_t = String::from(" "))]
-        separator: String,
+#[derive(Deserialize, Debug)]
+pub struct Config {
+    #[serde(default = "colors")]
+    pub colors: Colors,
 
-        /// String to add around active workspacse
-        #[arg(short, long, default_value_t = String::from("|"))]
-        active: String,
+    #[serde(default = "plain_text_mode")]
+    pub plain_text_mode: PlainTextMode,
+}
 
-        /// Use carriage return to override update line
-        #[arg(short, long, action = clap::ArgAction::SetTrue, default_value_t = false)]
-        carriage_return: bool,
+fn colors() -> Colors {
+    Colors::default()
+}
 
-        #[arg(short, long, action = clap::ArgAction::SetTrue, default_value_t = false)]
-        print_once: bool
-    },
+fn plain_text_mode() -> PlainTextMode {
+    PlainTextMode::default()
+}
+
+impl Config {
+    pub fn new(path: &Option<String>) -> Result<Self, Box<dyn Error>> {
+        let builder = config::Config::builder();
+        let builder = match path {
+            Some(path) => builder.add_source(
+                config::File::from(PathBuf::from_str(&path).expect("Infallible"))
+                    .format(config::FileFormat::Toml),
+            ),
+            None => {
+                let path = get_default_config_path()?;
+                if !path.exists() {
+                    log::info!("Config file not found. Using default configuration.");
+                    return Ok(Self::default());
+                }
+                builder.add_source(
+                    config::File::from(get_default_config_path().expect("Infallible"))
+                        .format(config::FileFormat::Toml),
+                )
+            }
+        };
+
+        let config = builder.build()?.try_deserialize::<Config>()?;
+        Ok(config)
+    }
+
+    //pub fn parse(path: &Option<String>) -> Result<Config, Box<dyn Error>> {
+    //    let path = match path {
+    //        Some(path) => PathBuf::from_str(&path).expect("Infallible"),
+    //        None => get_default_config_path()?,
+    //    };
+    //
+    //    let text = fs::read_to_string(path)?;
+    //    toml::from_str(&text).map_err(|e| Box::new(e) as Box<dyn Error>)
+    //}
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            colors: Colors::default(),
+            plain_text_mode: PlainTextMode::default(),
+        }
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Colors {
+    #[serde(default = "black")]
+    pub bg: Color,
+
+    #[serde(default = "white")]
+    pub fg: Color,
+
+    #[serde(default = "darkgray")]
+    pub bg_active: Color,
+
+    #[serde(default = "magenta")]
+    pub fg_active: Color,
+
+    #[serde(default = "blue")]
+    pub bg_focused: Color,
+
+    #[serde(default = "white")]
+    pub fg_focused: Color,
+}
+
+impl Default for Colors {
+    fn default() -> Self {
+        Self {
+            bg: black(),
+            fg: white(),
+            bg_active: blue(),
+            fg_active: black(),
+            bg_focused: darkgray(),
+            fg_focused: white(),
+        }
+    }
+}
+
+const fn black() -> Color {
+    Color::Black
+}
+
+const fn white() -> Color {
+    Color::White
+}
+
+const fn darkgray() -> Color {
+    Color::DarkGray
+}
+
+const fn magenta() -> Color {
+    Color::Magenta
+}
+
+const fn blue() -> Color {
+    Color::Blue
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct PlainTextMode {
+    #[serde(default = "separator")]
+    pub separator: String,
+
+    #[serde(default = "separator_active")]
+    pub separator_active: String,
+
+    #[serde(default = "print_once")]
+    pub print_once: bool,
+
+    #[serde(default = "carriage_return")]
+    pub carriage_return: bool,
+}
+
+impl Default for PlainTextMode {
+    fn default() -> Self {
+        Self {
+            separator: separator(),
+            separator_active: separator_active(),
+            print_once: carriage_return(),
+            carriage_return: carriage_return(),
+        }
+    }
+}
+
+fn separator() -> String {
+    String::from(" ")
+}
+
+fn separator_active() -> String {
+    String::from("|")
+}
+
+fn carriage_return() -> bool {
+    true
+}
+
+fn print_once() -> bool {
+    false
 }

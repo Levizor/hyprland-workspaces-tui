@@ -11,20 +11,20 @@ use serde_json::Value;
 use tokio::process::Command;
 use tui_big_text::{BigText, PixelSize};
 
-use crate::themes::Theme;
+use crate::config::Colors;
 
 #[derive(Debug)]
 pub struct Workspace {
     pub name: String,
     active: bool,
-    theme: Theme,
+    colors: Colors,
     big_text: bool,
     pub rect: Rect,
     focused: bool,
 }
 
 impl Workspace {
-    pub fn new(value: Value, theme: Theme, big_text: bool) -> Self {
+    pub fn new(value: Value, colors: Colors, big_text: bool) -> Self {
         let n = value["name"].to_string();
         let size = n.len();
         let name = n[1..size - 1].to_string();
@@ -32,7 +32,7 @@ impl Workspace {
             name,
             active: value["active"].to_string().parse().unwrap_or(false),
             //I don't think we need this, but let it be here for a while: id: value["id"].to_string().parse().unwrap_or(-9999),
-            theme,
+            colors,
             big_text,
             rect: Rect::new(0, 0, 0, 0),
             focused: false,
@@ -63,20 +63,16 @@ impl Workspace {
     }
 
     fn get_colors(&self) -> (Color, Color) {
-        let mut background = self.theme.button_bg;
-        let mut foreground = self.theme.button_fg;
+        let mut background = self.colors.bg;
+        let mut foreground = self.colors.fg;
 
         if self.focused {
-            background = self.theme.focused_bg;
-            foreground = self.theme.focused_fg;
+            background = self.colors.bg_focused;
+            foreground = self.colors.fg_focused;
         }
         if self.active {
-            background = self.theme.active_bg;
-            foreground = self.theme.active_fg;
-        }
-
-        if self.theme.transparent_bg {
-            background = Color::Reset;
+            background = self.colors.bg_active;
+            foreground = self.colors.fg_active;
         }
 
         (background, foreground)

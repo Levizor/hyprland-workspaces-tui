@@ -10,7 +10,7 @@ use crate::{app::App, elements::Workspace};
 pub fn render(app: &mut App, frame: &mut Frame) {
     let workspaces = &mut app.workspaces;
     let layout = app
-        .config
+        .cli
         .vertical
         .then(|| {
             Layout::vertical(workspaces.iter().map(|ws| {

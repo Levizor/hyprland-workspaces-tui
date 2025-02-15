@@ -1,43 +1,45 @@
 use clap::{CommandFactory, Parser};
 use clap_complete::generate;
-use config::Commands;
+use cli::Commands;
+use config::Config;
 use handler::handle_mouse_event;
 use simplelog::{CombinedLogger, Config as Conf, LevelFilter, WriteLogger};
-use std::fs::File;
 use std::io;
+use std::{fs::File, process::exit};
 
 use ratatui::{backend::CrosstermBackend, Terminal};
 
 use crate::{
     app::{App, AppResult},
-    config::Config,
+    cli::Cli,
     event::{Event, EventHandler},
     handler::handle_key_events,
     tui::Tui,
 };
 
 pub mod app;
+pub mod cli;
 pub mod config;
 pub mod elements;
 pub mod event;
 pub mod handler;
 pub mod plain_text_mode;
-pub mod themes;
 pub mod tui;
 pub mod ui;
 
 #[tokio::main]
 async fn main() -> AppResult<()> {
-    let conf = Config::parse();
+    let cli = Cli::parse();
+    let config = Config::new(&cli.config_path)?;
 
-    if let Some(shell) = conf.completions {
-        let mut cmd = Config::command();
+    if let Some(shell) = cli.completions {
+        let mut cmd = Cli::command();
         let mut out = io::stdout();
         generate(shell, &mut cmd, "hyprland-workspaces-tui", &mut out);
         return Ok(());
     }
 
-    if conf.debug {
+    if cli.debug {
         CombinedLogger::init(vec![WriteLogger::new(
             LevelFilter::Debug,
             Conf::default(),
@@ -46,9 +48,9 @@ async fn main() -> AppResult<()> {
         .unwrap();
     }
 
-    let mut app = App::new(conf);
+    let mut app = App::new(cli, config);
 
-    if let Some(Commands::Plain { .. }) = &app.config.command {
+    if let Some(Commands::Plain { .. }) = &app.cli.command {
         log::info!("Entering plain text mode");
         return plain_text_mode::main(&mut app).await;
     }

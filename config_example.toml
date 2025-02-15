@@ -1,0 +1,12 @@
+[colors]
+bg = "reset" # makes backrgound transparent
+fg = "white" # use ansi names
+bg_active = "#ff3434" # or hexadecimal
+fg_active = "black"
+bg_focused = "magenta"
+fg_focused = "cyan"
+
+[plain_text_mode]
+separator = " " # separator between workspaces
+separator_active = "|"  # separator for active workspaces
+

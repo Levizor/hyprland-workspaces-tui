@@ -1,8 +1,4 @@
-use crate::{
-    config::Config,
-    elements::Workspace,
-    themes::{Theme, Themes},
-};
+use crate::{cli::Cli, config::Config, elements::Workspace};
 use ratatui::layout::Position;
 use serde_json::Value;
 use std::{
@@ -15,16 +11,6 @@ use tokio::{
     process::Child,
 };
 
-pub fn get_state(state: String) -> Result<Value, ()> {
-    let json = serde_json::from_str(&state);
-    match json {
-        Ok(result) => Ok(result),
-        Err(e) => {
-            log::error!("Error: {}", e);
-            Err(())
-        }
-    }
-}
 /// Application result type.
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
@@ -36,21 +22,20 @@ pub struct App {
     pub stream: tokio::io::Lines<BufReader<ChildStdout>>,
     pub workspaces: Vec<Workspace>,
     pub child: Child,
+    pub cli: Cli,
     pub config: Config,
-    pub theme: Theme,
 }
 
 impl App {
     /// Constructs a new instance of [`App`].
-    pub fn new(config: Config) -> Self {
-        let (stream, child) = App::init_reader(&config.monitor);
-        let theme = Themes::get_theme(&config.theme, config.transparent);
+    pub fn new(cli: Cli, config: Config) -> Self {
+        let (stream, child) = App::init_reader(&cli.monitor);
         Self {
             running: true,
             stream,
             workspaces: Vec::new(),
             child,
-            theme,
+            cli,
             config,
         }
     }
@@ -64,10 +49,10 @@ impl App {
                     ws["name"]
                         .to_string()
                         .starts_with("\"special")
-                        .then(|| self.config.show_special)
+                        .then(|| self.cli.show_special)
                         .unwrap_or(true)
                 })
-                .map(|ws| Workspace::new(ws.clone(), self.theme.clone(), self.config.big_text))
+                .map(|ws| Workspace::new(ws.clone(), self.config.colors.clone(), self.cli.big_text))
                 .for_each(|ws| self.workspaces.push(ws));
             return Ok(());
         }
@@ -75,7 +60,7 @@ impl App {
     }
 
     pub fn feed(&mut self, line: String) {
-        if let Ok(state) = get_state(line) {
+        if let Ok(state) = Self::get_state(line) {
             let _ = self.update(state);
         }
     }
@@ -120,5 +105,16 @@ impl App {
     pub async fn quit(&mut self) {
         self.close_reader().await;
         self.running = false;
+    }
+
+    pub fn get_state(state: String) -> Result<Value, ()> {
+        let json = serde_json::from_str(&state);
+        match json {
+            Ok(result) => Ok(result),
+            Err(e) => {
+                log::error!("Error: {}", e);
+                Err(())
+            }
+        }
     }
 }
