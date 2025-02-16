@@ -2,8 +2,10 @@ use crate::{cli::Cli, config::Config, elements::Workspace};
 use ratatui::layout::Position;
 use serde_json::Value;
 use std::{
+    cell::Cell,
     error::{self},
     process::{exit, Stdio},
+    sync::Mutex,
 };
 use tokio::process::{ChildStdout, Command};
 use tokio::{
@@ -22,20 +24,18 @@ pub struct App {
     pub stream: tokio::io::Lines<BufReader<ChildStdout>>,
     pub workspaces: Vec<Workspace>,
     pub child: Child,
-    pub cli: Cli,
     pub config: Config,
 }
 
 impl App {
     /// Constructs a new instance of [`App`].
-    pub fn new(cli: Cli, config: Config) -> Self {
-        let (stream, child) = App::init_reader(&cli.monitor);
+    pub fn new(config: Config) -> Self {
+        let (stream, child) = App::init_reader(&config.monitor);
         Self {
             running: true,
             stream,
             workspaces: Vec::new(),
             child,
-            cli,
             config,
         }
     }
@@ -46,13 +46,16 @@ impl App {
             workspaces
                 .into_iter()
                 .filter(|ws| {
+                    // filters special workspaces depending on the config
                     ws["name"]
                         .to_string()
                         .starts_with("\"special")
-                        .then(|| self.cli.show_special)
+                        .then(|| self.config.show_special)
                         .unwrap_or(true)
                 })
-                .map(|ws| Workspace::new(ws.clone(), self.config.colors.clone(), self.cli.big_text))
+                .map(|ws| {
+                    Workspace::new(ws.clone(), self.config.colors.clone(), self.config.big_text)
+                })
                 .for_each(|ws| self.workspaces.push(ws));
             return Ok(());
         }
@@ -75,6 +78,7 @@ impl App {
             .arg(monitor)
             .stdout(Stdio::piped())
             .spawn();
+
         let Ok(mut child) = child else {
             eprintln!("Couldn't run hyprland-workspaces");
             exit(1);
@@ -101,7 +105,6 @@ impl App {
         let _ = self.child.kill().await;
     }
 
-    /// Set running to false to quit the application.
     pub async fn quit(&mut self) {
         self.close_reader().await;
         self.running = false;

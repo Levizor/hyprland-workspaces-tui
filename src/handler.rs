@@ -1,4 +1,7 @@
-use crate::app::{App, AppResult};
+use crate::{
+    app::{App, AppResult},
+    elements::Workspace,
+};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent};
 use ratatui::layout::Position;
 
@@ -35,6 +38,7 @@ fn handle_click(mouse_event: MouseEvent, app: &mut App) {
 
 fn handle_move(mouse_event: MouseEvent, app: &mut App) {
     app.workspaces.iter_mut().for_each(|ws| ws.set_focus(false));
+
     if let Some(ws) = app.find_ws_mut_by_mouse_pos(get_pos(mouse_event)) {
         ws.set_focus(true);
     }

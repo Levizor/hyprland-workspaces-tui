@@ -1,9 +1,8 @@
+use crate::cli::{Cli, Commands};
 use ::config;
-use dirs::config_dir;
 use ratatui::style::Color;
 use serde::Deserialize;
 use std::error::Error;
-use std::fs;
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -18,11 +17,46 @@ fn get_default_config_path() -> Result<PathBuf, Box<dyn Error>> {
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
+    #[serde(default = "big_text")]
+    pub big_text: bool,
+
+    #[serde(default = "show_special")]
+    pub show_special: bool,
+
+    #[serde(default = "monitor")]
+    pub monitor: String,
+
+    #[serde(default = "allignment")]
+    pub allignment: Allignment,
+
     #[serde(default = "colors")]
     pub colors: Colors,
 
     #[serde(default = "plain_text_mode")]
     pub plain_text_mode: PlainTextMode,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum Allignment {
+    Horizontal,
+    Vertical,
+}
+
+const fn allignment() -> Allignment {
+    Allignment::Horizontal
+}
+
+fn monitor() -> String {
+    String::from("ALL")
+}
+
+const fn big_text() -> bool {
+    false
+}
+
+const fn show_special() -> bool {
+    false
 }
 
 fn colors() -> Colors {
@@ -58,15 +92,34 @@ impl Config {
         Ok(config)
     }
 
-    //pub fn parse(path: &Option<String>) -> Result<Config, Box<dyn Error>> {
-    //    let path = match path {
-    //        Some(path) => PathBuf::from_str(&path).expect("Infallible"),
-    //        None => get_default_config_path()?,
-    //    };
-    //
-    //    let text = fs::read_to_string(path)?;
-    //    toml::from_str(&text).map_err(|e| Box::new(e) as Box<dyn Error>)
-    //}
+    pub fn merge_with_cli(&mut self, cli: &Cli) {
+        match cli.command {
+            Some(Commands::Plain {
+                carriage_return,
+                print_once,
+            }) => {
+                if let Some(cr) = carriage_return {
+                    self.plain_text_mode.carriage_return = cr;
+                }
+                if let Some(po) = print_once {
+                    self.plain_text_mode.print_once = po;
+                }
+            }
+            None => {}
+        }
+
+        if let Some(bt) = cli.big_text {
+            self.big_text = bt;
+        }
+
+        if let Some(monitor) = &cli.monitor {
+            self.monitor = monitor.to_string();
+        }
+
+        if let Some(show_special) = cli.show_special {
+            self.show_special = show_special
+        }
+    }
 }
 
 impl Default for Config {
@@ -74,6 +127,10 @@ impl Default for Config {
         Self {
             colors: Colors::default(),
             plain_text_mode: PlainTextMode::default(),
+            show_special: show_special(),
+            big_text: big_text(),
+            monitor: monitor(),
+            allignment: allignment(),
         }
     }
 }
@@ -86,13 +143,13 @@ pub struct Colors {
     #[serde(default = "white")]
     pub fg: Color,
 
-    #[serde(default = "darkgray")]
+    #[serde(default = "blue")]
     pub bg_active: Color,
 
-    #[serde(default = "magenta")]
+    #[serde(default = "black")]
     pub fg_active: Color,
 
-    #[serde(default = "blue")]
+    #[serde(default = "darkgray")]
     pub bg_focused: Color,
 
     #[serde(default = "white")]
@@ -124,10 +181,6 @@ const fn darkgray() -> Color {
     Color::DarkGray
 }
 
-const fn magenta() -> Color {
-    Color::Magenta
-}
-
 const fn blue() -> Color {
     Color::Blue
 }
@@ -152,7 +205,7 @@ impl Default for PlainTextMode {
         Self {
             separator: separator(),
             separator_active: separator_active(),
-            print_once: carriage_return(),
+            print_once: print_once(),
             carriage_return: carriage_return(),
         }
     }

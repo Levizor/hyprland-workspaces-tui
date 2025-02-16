@@ -1,9 +1,10 @@
-use crate::{app::AppResult, config::PlainTextMode, App};
+use crate::{app::AppResult, cli::Commands, config::PlainTextMode, App};
 use std::io::{self, Write};
 use tokio::signal;
 
 fn print(app: &App) {
     let config = &app.config.plain_text_mode;
+
     let mut message = String::new();
     let ws = &app.workspaces;
     let len = ws.len();
@@ -18,6 +19,7 @@ fn print(app: &App) {
             message.push_str(&config.separator);
         }
     }
+
     print!(
         "{}{}{}",
         if config.carriage_return { "\r" } else { "" },

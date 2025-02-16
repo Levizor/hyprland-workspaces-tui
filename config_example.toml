@@ -1,3 +1,7 @@
+big_text = true # whether to use big text for rendering workspaces names
+allignment = "horizontal" # horizontal or vertical
+show_special = false
+monitor = "ALL" # monitor to fetch workspaces from
 [colors]
 bg = "reset" # makes backrgound transparent
 fg = "white" # use ansi names
@@ -9,4 +13,6 @@ fg_focused = "cyan"
 [plain_text_mode]
 separator = " " # separator between workspaces
 separator_active = "|"  # separator for active workspaces
+carriage_return = true # print overwriting the previous line
+print_once = false # print only once and exit
 

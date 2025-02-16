@@ -62,6 +62,10 @@ impl Workspace {
         self.active
     }
 
+    pub fn is_focused(&self) -> bool {
+        self.focused
+    }
+
     fn get_colors(&self) -> (Color, Color) {
         let mut background = self.colors.bg;
         let mut foreground = self.colors.fg;

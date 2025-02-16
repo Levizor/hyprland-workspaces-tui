@@ -4,8 +4,8 @@ use cli::Commands;
 use config::Config;
 use handler::handle_mouse_event;
 use simplelog::{CombinedLogger, Config as Conf, LevelFilter, WriteLogger};
+use std::fs::File;
 use std::io;
-use std::{fs::File, process::exit};
 
 use ratatui::{backend::CrosstermBackend, Terminal};
 
@@ -30,7 +30,7 @@ pub mod ui;
 #[tokio::main]
 async fn main() -> AppResult<()> {
     let cli = Cli::parse();
-    let config = Config::new(&cli.config_path)?;
+    let mut config = Config::new(&cli.config_path)?;
 
     if let Some(shell) = cli.completions {
         let mut cmd = Cli::command();
@@ -48,9 +48,11 @@ async fn main() -> AppResult<()> {
         .unwrap();
     }
 
-    let mut app = App::new(cli, config);
+    config.merge_with_cli(&cli);
 
-    if let Some(Commands::Plain { .. }) = &app.cli.command {
+    let mut app = App::new(config);
+
+    if let Some(Commands::Plain { .. }) = cli.command {
         log::info!("Entering plain text mode");
         return plain_text_mode::main(&mut app).await;
     }
@@ -82,7 +84,6 @@ async fn main() -> AppResult<()> {
         }
     }
 
-    // Exit the user interface.
     tui.exit()?;
     Ok(())
 }
