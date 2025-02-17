@@ -1,7 +1,8 @@
 big_text = true # whether to use big text for rendering workspaces names
 allignment = "horizontal" # horizontal or vertical
-show_special = false
+show_special = false # whether to show special workspaces
 monitor = "ALL" # monitor to fetch workspaces from
+
 [colors]
 bg = "reset" # makes backrgound transparent
 fg = "white" # use ansi names
