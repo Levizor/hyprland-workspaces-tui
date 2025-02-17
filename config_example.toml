@@ -4,10 +4,13 @@ show_special = false # whether to show special workspaces
 monitor = "ALL" # monitor to fetch workspaces from
 
 [colors]
+# default colors for workspaces
 bg = "reset" # makes backrgound transparent
 fg = "white" # use ansi names
+# colors for active workspaces
 bg_active = "#ff3434" # or hexadecimal
 fg_active = "black"
+# colors for focused workspaces 
 bg_focused = "magenta"
 fg_focused = "cyan"
 
