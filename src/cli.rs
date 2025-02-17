@@ -8,6 +8,8 @@ pub struct Cli {
     #[arg(short, long, value_name = "MONITOR")]
     pub monitor: Option<String>,
 
+    /// Path to config file. Default config path is
+    /// $XDG_CONFIG_HOME/hyprland-workspaces-tui/config.toml
     #[arg(short, long, value_name = "CONFIG_PATH")]
     pub config_path: Option<String>,
 
