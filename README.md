@@ -8,6 +8,8 @@ Designed as a lightweight alternative to common status bar functionalities.
 
 ## Installation
 
+### NixOS or Nix package manager
+
 Available in nixpkgs-unstable.
 
 ```
@@ -15,6 +17,16 @@ Available in nixpkgs-unstable.
     hyprland-workspaces-tui
   ];
 ```
+
+### Arch linux
+
+Available in AUR but requires hyprland-workspaces to be installed.
+
+```
+yay -S hyprland-workspaces hyprland-workspaces-tui
+```
+
+### Other
 
 The other option requires [hyprland-workspaces](https://github.com/FieldofClay/hyprland-workspaces) to be installed manually.
 
