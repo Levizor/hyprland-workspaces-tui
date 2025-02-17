@@ -1,6 +1,6 @@
 # hyprland-workspaces-tui
 
-[![Packaging status](https://repology.org/badge/version-for-repo/nix_unstable/hyprland-workspaces-tui.svg)](https://search.nixos.org/packages?channel=unstable&show=<your-package-name>)
+[![Packaging status](https://repology.org/badge/vertical-allrepos/hyprland-workspaces-tui.svg)](https://repology.org/project/hyprland-workspaces-tui/versions)
 
 hyprland-workspaces-tui is a terminal-based user interface (TUI) wrapper for the [hyprland-workspaces](https://github.com/FieldofClay/hyprland-workspaces) CLI utility. It provides a sleek and efficient way to display your Hyprland workspaces directly in your terminal.
 
