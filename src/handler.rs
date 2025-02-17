@@ -1,7 +1,4 @@
-use crate::{
-    app::{App, AppResult},
-    elements::Workspace,
-};
+use crate::app::{App, AppResult};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent};
 use ratatui::layout::Position;
 

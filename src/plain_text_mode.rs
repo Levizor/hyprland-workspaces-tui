@@ -1,4 +1,4 @@
-use crate::{app::AppResult, cli::Commands, config::PlainTextMode, App};
+use crate::{app::AppResult, App};
 use std::io::{self, Write};
 use tokio::signal;
 

@@ -1,11 +1,9 @@
-use crate::{cli::Cli, config::Config, elements::Workspace};
+use crate::{config::Config, elements::Workspace};
 use ratatui::layout::Position;
 use serde_json::Value;
 use std::{
-    cell::Cell,
     error::{self},
     process::{exit, Stdio},
-    sync::Mutex,
 };
 use tokio::process::{ChildStdout, Command};
 use tokio::{
