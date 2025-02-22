@@ -5,7 +5,7 @@ use ratatui::{
     layout::{Constraint, Flex, Layout, Position, Rect},
     style::{Color, Style},
     text::ToLine,
-    widgets::{Widget, WidgetRef},
+    widgets::{Block, Borders, Widget, WidgetRef},
 };
 use serde_json::Value;
 use tokio::process::Command;
@@ -18,13 +18,14 @@ pub struct Workspace {
     pub name: String,
     active: bool,
     colors: Colors,
+    borders: bool,
     big_text: bool,
     pub rect: Rect,
     focused: bool,
 }
 
 impl Workspace {
-    pub fn new(value: Value, colors: Colors, big_text: bool) -> Self {
+    pub fn new(value: Value, colors: Colors, big_text: bool, borders: bool) -> Self {
         let n = value["name"].to_string();
         let size = n.len();
         let name = n[1..size - 1].to_string();
@@ -36,6 +37,7 @@ impl Workspace {
             big_text,
             rect: Rect::new(0, 0, 0, 0),
             focused: false,
+            borders,
         }
     }
 
@@ -64,6 +66,18 @@ impl Workspace {
 
     pub fn is_focused(&self) -> bool {
         self.focused
+    }
+
+    fn get_border_color(&self) -> Color {
+        let colors = &self.colors;
+        let mut color = colors.border;
+        if self.focused {
+            color = colors.border_focused;
+        }
+        if self.active {
+            color = colors.border_active;
+        }
+        color
     }
 
     fn get_colors(&self) -> (Color, Color) {
@@ -95,19 +109,10 @@ impl WidgetRef for Workspace {
     #[allow(clippy::cast_possible_truncation)]
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
         let line = self.name.to_line();
-        log::debug!("Rendering widget {}", line);
 
         let (background, foreground) = self.get_colors();
 
         buf.set_style(area, Style::new().bg(background).fg(foreground));
-        if area.height > 2 {
-            buf.set_string(
-                area.x,
-                area.y,
-                " ".repeat(area.width as usize),
-                Style::new().fg(foreground).bg(background),
-            );
-        }
 
         match self.big_text {
             true => {
@@ -127,6 +132,20 @@ impl WidgetRef for Workspace {
                     &line,
                     area.width,
                 );
+            }
+        }
+
+        'a: {
+            if self.borders {
+                let color = self.get_border_color();
+                if color == Color::Reset {
+                    break 'a;
+                }
+                log::info!("Border color: {}", color);
+                let block = Block::default()
+                    .borders(Borders::ALL)
+                    .border_style(Style::default().fg(color));
+                block.render(area, buf);
             }
         }
     }

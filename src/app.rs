@@ -52,7 +52,12 @@ impl App {
                         .unwrap_or(true)
                 })
                 .map(|ws| {
-                    Workspace::new(ws.clone(), self.config.colors.clone(), self.config.big_text)
+                    Workspace::new(
+                        ws.clone(),
+                        self.config.colors.clone(),
+                        self.config.big_text,
+                        self.config.borders,
+                    )
                 })
                 .for_each(|ws| self.workspaces.push(ws));
             return Ok(());

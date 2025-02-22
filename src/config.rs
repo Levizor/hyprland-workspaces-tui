@@ -20,6 +20,9 @@ pub struct Config {
     #[serde(default = "big_text")]
     pub big_text: bool,
 
+    #[serde(default = "borders")]
+    pub borders: bool,
+
     #[serde(default = "show_special")]
     pub show_special: bool,
 
@@ -41,6 +44,10 @@ pub struct Config {
 pub enum Allignment {
     Horizontal,
     Vertical,
+}
+
+const fn borders() -> bool {
+    true
 }
 
 const fn allignment() -> Allignment {
@@ -131,6 +138,7 @@ impl Default for Config {
             big_text: big_text(),
             monitor: monitor(),
             allignment: allignment(),
+            borders: borders(),
         }
     }
 }
@@ -143,17 +151,26 @@ pub struct Colors {
     #[serde(default = "white")]
     pub fg: Color,
 
+    #[serde(default = "black")]
+    pub border: Color,
+
     #[serde(default = "blue")]
     pub bg_active: Color,
 
     #[serde(default = "black")]
     pub fg_active: Color,
 
+    #[serde(default = "white")]
+    pub border_active: Color,
+
     #[serde(default = "darkgray")]
     pub bg_focused: Color,
 
     #[serde(default = "white")]
     pub fg_focused: Color,
+
+    #[serde(default = "blue")]
+    pub border_focused: Color,
 }
 
 impl Default for Colors {
@@ -165,6 +182,9 @@ impl Default for Colors {
             fg_active: black(),
             bg_focused: darkgray(),
             fg_focused: white(),
+            border: black(),
+            border_focused: blue(),
+            border_active: white(),
         }
     }
 }

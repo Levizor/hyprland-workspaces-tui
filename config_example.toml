@@ -2,17 +2,22 @@ big_text = true # whether to use big text for rendering workspaces names
 allignment = "horizontal" # horizontal or vertical
 show_special = false # whether to show special workspaces
 monitor = "ALL" # monitor to fetch workspaces from
+borders = true
 
 [colors]
 # default colors for workspaces
 bg = "reset" # makes backrgound transparent
 fg = "white" # use ansi names
+border = "reset"
 # colors for active workspaces
 bg_active = "#ff3434" # or hexadecimal
 fg_active = "black"
+border_active = "reset"
 # colors for focused workspaces 
-bg_focused = "magenta"
+bg_focused = "reset"
 fg_focused = "cyan"
+border_focused = "white"
+
 
 [plain_text_mode]
 separator = " " # separator between workspaces
