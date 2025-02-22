@@ -151,7 +151,7 @@ pub struct Colors {
     #[serde(default = "white")]
     pub fg: Color,
 
-    #[serde(default = "black")]
+    #[serde(default = "reset")]
     pub border: Color,
 
     #[serde(default = "blue")]
@@ -160,7 +160,7 @@ pub struct Colors {
     #[serde(default = "black")]
     pub fg_active: Color,
 
-    #[serde(default = "white")]
+    #[serde(default = "reset")]
     pub border_active: Color,
 
     #[serde(default = "darkgray")]
@@ -169,7 +169,7 @@ pub struct Colors {
     #[serde(default = "white")]
     pub fg_focused: Color,
 
-    #[serde(default = "blue")]
+    #[serde(default = "white")]
     pub border_focused: Color,
 }
 
@@ -182,13 +182,16 @@ impl Default for Colors {
             fg_active: black(),
             bg_focused: darkgray(),
             fg_focused: white(),
-            border: black(),
-            border_focused: blue(),
-            border_active: white(),
+            border: reset(),
+            border_focused: white(),
+            border_active: reset(),
         }
     }
 }
 
+const fn reset() -> Color {
+    Color::Reset
+}
 const fn black() -> Color {
     Color::Black
 }

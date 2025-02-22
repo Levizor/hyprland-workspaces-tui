@@ -1,6 +1,5 @@
 use ratatui::{
     layout::{Constraint, Layout, Rect},
-    text::ToLine,
     Frame,
 };
 
